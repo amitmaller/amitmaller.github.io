@@ -1,0 +1,96 @@
+*{
+    font-family: Georgia;
+}
+
+body{
+    background-image: url(background.jpg);
+}
+
+h1, h3, h5{
+    color: brown;
+}
+
+select{
+    width: 100%;
+    padding: 3%;
+}
+
+#visualDiv {
+    position: relative;
+    height: 300px;
+    width: 200px;
+    margin-left: 70%;
+}
+
+#selectDiv {
+    float: left;
+    width: 20%
+}
+
+.selectMenu {
+    margin-top: 5%;
+}
+
+#searchButton{
+    position: relative;
+    width: 100%;
+}
+
+#bodyOutline, .bodyParts{
+    position: absolute;
+    top: 0;
+    left: 0;
+    height: 100%;
+    width: 100%;
+    margin-top: 20%
+
+}
+
+#bodyOutline {
+    border-style: solid;
+    border-width: 2px;
+
+}
+
+.bodyParts{
+    z-index: 1;
+    display: None;
+    height: 10%;
+    width: 20%;
+}
+
+#noseRegion {
+    height: 5%;
+    width: 10%;
+    left: 47%;
+    top: 12%;
+}
+
+#headRegion {
+    left: 42%;
+    top: 5%;
+}
+
+#stomachRegion{
+    left: 42%;
+    top: 40%;
+}
+
+
+#chestRegion {
+    left: 42%;
+    top: 26%;
+}
+
+#formDiv, #resultDiv{
+    display: None;
+}
+
+.redirectLink {
+    cursor: pointer;
+    color: #0645AD;
+}
+
+#searchResultDiv, #resultDiv, #formDiv {
+    color: wheat;
+}

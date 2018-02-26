@@ -1,0 +1,244 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>QuackMD</title>
+    <link rel="stylesheet" type="text/css" href="style.css">
+    <script type="text/javascript">
+
+        // Redirect old browsers to the download page
+        if(!document.getElementById){
+            window.location = "download.html"
+        }
+
+        // Variable definitions
+        var http = new XMLHttpRequest();
+        var allOptions = [], selectedOptions = [], displayedMenus = [], displayedBodyParts = [];
+        var selectDiv, formDiv, resultDiv ;
+        var messages = ["It's definitely cancer", "It could be cancer or the common cold for all we care",
+            "You're about to die. Get 8 hours of sleep everyday to prevent it next time"]
+
+
+        // The body onload handler function - executed when body is done loading
+        function onLoadHandler() {
+            selectDiv = document.getElementById('selectDiv');
+            formDiv = document.getElementById('formDiv');
+            resultDiv = document.getElementById('resultDiv');
+
+            //check if xhr object is good
+            if (http) {
+                http.open("get", "data.xml", true);
+                http.onreadystatechange = preparePage;
+                http.send();
+            }
+        }
+
+        // Loads data and creates select menu elements
+        function preparePage() {
+            // if the object is ready
+            if (http.readyState === 4) {
+                // if the status is OK
+                if (http.status === 200) {
+                    // unpack the data
+                    var xmlDocument = http.responseXML;
+                    // Get the data from the XML object
+                    getData(xmlDocument.firstChild);
+                    // Create select menus dynamically using the data
+                    createElements(xmlDocument.firstChild.getAttribute('name'), 0)
+                }
+            }
+        }
+
+        // Recursively traverses the nodelist to read the data into an array
+        function getData(currentNode) {
+            // If the current node is a leaf node, stop
+            if (!currentNode.hasChildNodes()) {
+                return;
+            }
+
+            var currentNodeName = currentNode.getAttribute('name');
+            var question = currentNode.getAttribute('question');
+            var region = currentNode.getAttribute('region');
+            // The question and region attributes are the first two elements
+            allOptions[currentNodeName] = [question, region];
+            // Iterate over the child nodes and make recursive calls to read their data
+            for (var i = 0, numOfChildren = currentNode.childNodes.length; i < numOfChildren; i++) {
+                var childNode = currentNode.childNodes[i];
+                // If it is an element node
+                if (childNode.nodeType === 1) {
+                    // Add it to the array
+                    allOptions[currentNodeName].push(childNode.getAttribute('name'))
+                    // Recursive call to child node
+                    getData(childNode)
+                }
+            }
+        }
+
+        // Creates the select menu elements dynamically
+        function createElements(currentLevelOption, currentLevel) {
+            // If at a tertiary option
+            if (!(currentLevelOption in allOptions)) {
+                // Display the form
+                formDiv.style.display = "block";
+                // Clear all child nodes to start afresh
+                while(resultDiv.firstChild)
+                    resultDiv.removeChild(resultDiv.firstChild);
+                // Iterate over the selected options and add them to the list element
+                for(var i = 0, numSelectedOptions = selectedOptions.length; i < numSelectedOptions; i++){
+                    var listItem = document.createElement('li');
+                    listItem.appendChild(document.createTextNode(selectedOptions[i]));
+                    resultDiv.appendChild(listItem);
+                }
+                listItem = document.createElement('li');
+                var rand = Math.floor(Math.random() * messages.length);
+                console.log(rand)
+                listItem.appendChild(document.createTextNode('Diagnosis: ' + messages[rand]));
+                resultDiv.appendChild(listItem);
+                // Display the symptoms
+                resultDiv.style.display = "block";
+                return;
+            }
+
+            var selectMenu = document.createElement('select');
+            var selectMenuElements = allOptions[currentLevelOption];
+            // The element at index 1 is the region attribute - decides where to place the image
+            var bodyPart = document.getElementById(selectMenuElements[1]);
+            // Remove it from the array
+            selectMenuElements.splice(1, 1);
+            // Set its class
+            selectMenu.setAttribute('class', 'selectMenu');
+            selectDiv.appendChild(selectMenu);
+
+            var numOfOptions = selectMenuElements.length;
+            // Iterate over the options under the menu and add them
+            for (i = 0; i < numOfOptions; i++) {
+                // Compatibility check: Modern browsers
+                if (document.getElementsByClassName) {
+                    var optionElement = document.createElement('option');
+                    optionElement.text = selectMenuElements[i];
+                    optionElement.value = i.toString();
+                    selectMenu.appendChild(optionElement);
+                }
+                // For IE8 and below
+                else
+                    selectMenu.options[selectMenu.options.length] = new Option(selectMenuElements[i], selectMenuElements[i]);
+            }
+            // Keeps track of already displayed menus
+            displayedMenus.push(selectMenu);
+
+            // The onchange handler for the current level menu
+            selectMenu.onchange = function () {
+                // Ignore the first option - it's the question
+                if(selectMenu.value === "0"){
+                    return;
+                }
+                formDiv.style.display = "";
+                resultDiv.style.display = "";
+                // If its menu has already been displayed, remove all sub menus under it
+                if (displayedMenus[currentLevel]) {
+                    for (var i = displayedMenus.length - 1; i > currentLevel; i--) {
+                        selectDiv.removeChild(displayedMenus[i]);
+                    }
+                    // Make the body part image invisible
+
+                    for (var i = displayedBodyParts.length - 1; i >= currentLevel; i--) {
+                        if(displayedBodyParts[i])
+                            displayedBodyParts[i].style.display = "None";
+                    }
+                    // Truncate the arrays
+                    displayedMenus.length = currentLevel + 1;
+                    selectedOptions.length = currentLevel + 1;
+                }
+                // If body region attribute is available
+                if(bodyPart) {
+                    // If the symptom does not exist, don't show it
+                    if (selectMenu.selectedIndex-1) {
+                            bodyPart.style.display = 'None'
+                    }
+                    // If the symptom exists, show it
+                    else {
+                        bodyPart.style.display = 'block';
+                        displayedBodyParts[currentLevel] = bodyPart;
+                    }
+                }
+                var currentSelectedOption = selectMenu.options[selectMenu.selectedIndex].text;
+                selectedOptions[currentLevel] = currentSelectedOption;
+                // Recursively create more menus
+                createElements(currentSelectedOption, currentLevel + 1)
+            }
+        }
+
+
+        // Validates form data
+        function validateInput() {
+            var userInputs = document.getElementsByTagName('input')
+            var fields = ["username", "age", "weight"]
+            var savedFields = []
+            // Validation for each of the three input fields
+            for (var i = 0, fieldsLength = fields.length; i < fieldsLength; i++) {
+                var fieldValue = userInputs[fields[i]].value;
+                // Check if it's not empty
+                if (fieldValue === "") {
+                    alert("Invalid value for " + fields[i]);
+                    return;
+                }
+                if(i>0) {
+                    if (isNaN(fieldValue)) {
+                        alert("Invalid value for " + fields[i]);
+                        return;
+                    }
+                }
+                savedFields[i] = fieldValue;
+            }
+            savedFields[1] = savedFields[1]+' years old';
+            savedFields[2] = 'Weighs '+savedFields[2]+' lbs'
+            // Concatenate the data
+            var arrayToSave = ([savedFields[1], savedFields[2]]).concat(selectedOptions);
+            // If localStorage is supported, save the data to it
+            if (localStorage) {
+                localStorage.setItem(savedFields[0], arrayToSave.join(','));
+            }
+            // Else save data to cookies
+            else{
+                document.cookie = savedFields[0] + "=" + arrayToSave.join(',');
+            }
+            document.getElementById('userDataForm').reset();
+            alert('Data saved successfully');
+        }
+    </script>
+</head>
+<body onload="onLoadHandler()">
+<div id="rootDiv">
+    <div id="headerDiv">
+        <h1>QuackMD</h1>
+    </div>
+    <div id="diagnosisDiv">
+        <h3>Answer these questions for an accurate diagnosis</h3>
+
+        <div id="selectDiv"></div>
+        <div id="visualDiv">
+            <button type="button" id="searchButton" onclick="window.location='search.html'">Search for saved symptoms</button>
+            <img id="bodyOutline" src="body.jpg">
+            <img id="headRegion" class="bodyParts" src="head.png">
+            <img id="noseRegion" class="bodyParts" src="nose.png">
+            <img id="chestRegion" class="bodyParts" src="lungs.png">
+            <img id="stomachRegion"  class="bodyParts" src="stomach.png">
+        </div>
+        <ul id="resultDiv"></ul>
+
+    </div>
+    <div id="formDiv">
+        <h3 id="formDescription">Enter your details to save this information</h3>
+        <form id="userDataForm">
+            <label for="username">Name</label>
+            <input id="username" class="formInput">
+            <label for="age">Age</label>
+            <input id="age" class="formInput">
+            <label for="weight">Weight(lbs)</label>
+            <input id="weight" class="formInput">
+            <button type="button" form="userDataForm" id="submitButton" onclick="validateInput()">Submit</button>
+        </form>
+    </div>
+</div>
+</body>
+</html>

@@ -1,0 +1,36 @@
+<optionData name="root" question="Do you have a headache?" region="headRegion">
+    <option name="Headache" question="How about a runny nose?" region="noseRegion">
+        <option name="Runny Nose" question="Do you have an upset stomach?" region="stomachRegion">
+            <option name="Upset stomach"/>
+            <option name="No upset stomach"/>
+        </option>
+        <option name="No Runny Nose" question="Are you suffering from chest congestion?" region="chestRegion">
+            <option name="Chest congestion"/>
+            <option name="No chest congestion"/>
+        </option>
+    </option>
+    <option name="No Headache" question="How tall are you?">
+        <option name="Microscopic" question="Are you a human being?">
+            <option name="Human being"/>
+            <option name="Alien"/>
+        </option>
+        <option name="5 feet 11.5 inches tall" question="Favourite hobbies?">
+            <option name="Football"/>
+            <option name="Don't click this" question="Why did you click it?">
+                <option name="Business" question="Where do you work?">
+                    <option name="Here"/>
+                    <option name="There"/>
+                </option>
+                <option name="Pleasure" question="How happy are you now?">
+                    <option name="Reasonably"/>
+                    <option name="A great deal"/>
+                </option>
+            </option>
+        </option>
+        <option name="Taller than you" question="GPA?">
+            <option name="2.0 GPA"/>
+            <option name="3.0 GPA"/>
+            <option name="4.0 GPA"/>
+        </option>
+    </option>
+</optionData>

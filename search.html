@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>QuackMD</title>
+    <link rel="stylesheet" type="text/css" href="style.css">
+    <script>
+
+        // handler function to search storage
+        function searchLocalStorage() {
+            var username = document.getElementById('username');
+            var savedArray = null;
+            // If localStorage is supported, search it
+            if(localStorage) {
+                var record = localStorage.getItem(username.value);
+                if(record) {
+                    savedArray = localStorage.getItem(username.value).split(',');
+                }
+                if (!savedArray) {
+                    alert('No records found');
+                    return;
+                }
+            }
+            // Else check cookies
+            else {
+                // Split cookie string into individual cookies
+                var cookies = document.cookie.split(';');
+                console.log(cookies.length)
+                // Search each cookie for the pass phrase
+                for(var j=0, numOfCookies=cookies.length; j < numOfCookies; j++){
+                    if(cookies[j].indexOf(username.value) !== -1) {
+                        break;
+                    }
+                }
+                if(j >= numOfCookies) {
+                    alert('No records found');
+                    return;
+                }
+                savedArray = (cookies[j].split('=')[1]).split(',')
+            }
+            username.value = '';
+            // Populate the result list
+            var resultDiv = document.getElementById('resultListDiv');
+            for(var i = 0, numSelectedOptions = savedArray.length; i < numSelectedOptions; i++){
+                var listItem = document.createElement('li');
+                listItem.appendChild(document.createTextNode(savedArray[i]));
+                resultDiv.appendChild(listItem);
+            }
+        }
+
+    </script>
+</head>
+<body>
+<h1>Search for a saved diagnosis</h1>
+<div id="searchResultDiv">
+    <label for="username">Enter your name</label>
+    <input id="username"/>
+    <button type="button" onclick="searchLocalStorage()">Search</button>
+    <button type="button" onclick="window.location='index.html'">Go Back</button>
+    <ul id="resultListDiv"></ul>
+</div>
+</body>
+</html>
